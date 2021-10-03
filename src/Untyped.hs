@@ -25,7 +25,8 @@ conversion lamt = conversion' lamt []
 -------------------------------
 
 vapp :: Value -> Value -> Value
-vapp = undefined
+vapp (VLam fun) val = fun val
+vapp (VNeutral n) val = VNeutral (NApp n val)
 
 eval :: NameEnv Value -> Term -> Value
 eval e t = eval' t (e, [])
