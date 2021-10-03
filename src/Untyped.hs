@@ -12,7 +12,13 @@ import           Common
 ----------------------------------------------
 
 conversion :: LamTerm -> Term
-conversion = undefined
+conversion lamt = conversion' lamt []
+                    where
+                        conversion' (LVar v) binds = case elemIndex v binds of
+                                                            Just n -> Bound n
+                                                            _ -> Free (Global v)
+                        conversion' (App t1 t2) binds = (conversion' t1 binds) :@: (conversion' t2 binds)
+                        conversion' (Abs v t) binds = Lam (conversion' t (v:binds))
 
 -------------------------------
 -- Sección 3
