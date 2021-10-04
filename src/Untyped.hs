@@ -44,7 +44,12 @@ eval' (Lam t) (entorno, lEnv) = VLam (\val -> eval' t (entorno, val:lEnv))
 --------------------------------
 
 quote :: Value -> Term
-quote = undefined
+quote value = quote' value 0
+                where
+                    quote' (VLam fun) n = Lam (quote' (fun (VNeutral (NFree (Quote n)))) (n+1))
+                    quote' (VNeutral (NFree (Global var))) n = Free (Global var)
+                    quote' (VNeutral (NFree (Quote m))) n = Bound (n - m - 1)
+                    quote' (VNeutral (NApp neutral val)) n = (quote' (VNeutral neutral) n) :@: (quote' val n)
 
 
 
