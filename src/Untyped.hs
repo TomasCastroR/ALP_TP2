@@ -36,7 +36,9 @@ eval' (Bound ii) (_, lEnv) = lEnv !! ii
 eval' (Free var) (entorno, _) = search var entorno 
                                     where search v [] = VNeutral (NFree v)
                                           search v ((name,val):xs) = if v == name then val else search v xs
-eval' (t1 :@: t2) (entorno, lEnv) = vapp (eval' t1 (entorno, lEnv)) (eval' t2 (entorno, lEnv))
+eval' (t1 :@: t2) env = let v1 = (eval' t1 env)
+                            v2 = (eval' t2 env)
+                        in vapp v1 v2
 eval' (Lam t) (entorno, lEnv) = VLam (\val -> eval' t (entorno, val:lEnv))
 
 --------------------------------
@@ -46,10 +48,14 @@ eval' (Lam t) (entorno, lEnv) = VLam (\val -> eval' t (entorno, val:lEnv))
 quote :: Value -> Term
 quote value = quote' value 0
                 where
-                    quote' (VLam fun) n = Lam (quote' (fun (VNeutral (NFree (Quote n)))) (n+1))
-                    quote' (VNeutral (NFree (Global var))) n = Free (Global var)
+                    quote' (VLam fun) n = let val = (fun (VNeutral (NFree (Quote n))))
+                                              t = quote' val (n+1)
+                                          in Lam t
+                    quote' (VNeutral (NFree (Global var))) _ = Free (Global var)
                     quote' (VNeutral (NFree (Quote m))) n = Bound (n - m - 1)
-                    quote' (VNeutral (NApp neutral val)) n = (quote' (VNeutral neutral) n) :@: (quote' val n)
+                    quote' (VNeutral (NApp neutral val)) n = let t1 = (quote' (VNeutral neutral) n)
+                                                                 t2 = (quote' val n)
+                                                             in t1 :@: t2
 
 
 
