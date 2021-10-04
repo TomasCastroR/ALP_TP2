@@ -25,16 +25,19 @@ conversion lamt = conversion' lamt []
 -------------------------------
 
 vapp :: Value -> Value -> Value
-vapp (VLam fun) val = fun val
-vapp (VNeutral n) val = VNeutral (NApp n val)
+vapp (VLam fun) v = fun v
+vapp (VNeutral n) v = VNeutral (NApp n v)
 
 eval :: NameEnv Value -> Term -> Value
 eval e t = eval' t (e, [])
 
 eval' :: Term -> (NameEnv Value, [Value]) -> Value
 eval' (Bound ii) (_, lEnv) = lEnv !! ii
-eval' _          _         = undefined
-
+eval' (Free var) (entorno, _) = search var entorno 
+                                    where search v [] = VNeutral (NFree v)
+                                          search v ((name,val):xs) = if v == name then val else search v xs
+eval' (t1 :@: t2) (entorno, lEnv) = vapp (eval' t1 (entorno, lEnv)) (eval' t2 (entorno, lEnv))
+eval' (Lam t) (entorno, lEnv) = VLam (\val -> eval' t (entorno, val:lEnv))
 
 --------------------------------
 -- Sección 4 - Mostrando Valores
