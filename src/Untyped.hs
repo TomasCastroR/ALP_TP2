@@ -33,13 +33,13 @@ eval e t = eval' t (e, [])
 
 eval' :: Term -> (NameEnv Value, [Value]) -> Value
 eval' (Bound ii) (_, lEnv) = lEnv !! ii
-eval' (Free var) (entorno, _) = search var entorno 
+eval' (Free var) (gEnv, _) = search var gEnv 
                                     where search v [] = VNeutral (NFree v)
                                           search v ((name,val):xs) = if v == name then val else search v xs
 eval' (t1 :@: t2) env = let v1 = (eval' t1 env)
                             v2 = (eval' t2 env)
                         in vapp v1 v2
-eval' (Lam t) (entorno, lEnv) = VLam (\val -> eval' t (entorno, val:lEnv))
+eval' (Lam t) (gEnv, lEnv) = VLam (\val -> eval' t (gEnv, val:lEnv))
 
 --------------------------------
 -- Sección 4 - Mostrando Valores
