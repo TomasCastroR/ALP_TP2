@@ -20,7 +20,7 @@ def divi = Y (\f x y n. (le (mult (suc n) y) x) (f x y (suc n)) (n))
 def div = \x y. divi x y zero
 
 -- Resto
-def mod = \x y. sub x (mult y (div x y))
+def mod = Y (\f x y. (is0 (sub y x)) (f (sub x y) y) (x) )
 
 -- Busca m que divida n. Itera hasta t
 def divisores' = Y (\f n m t. (le m t) ((is0 (mod n m)) (false) (f n (suc m) t)) (true))
